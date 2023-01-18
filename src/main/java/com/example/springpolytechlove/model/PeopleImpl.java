@@ -16,6 +16,11 @@ public class PeopleImpl implements PeopleService {
     }
 
     @Override
+    public List<People> findAllByNameCityAndAgeBetweenAndIdNot(String nameCity, int age, int age2, long id) {
+        return peopleRepository.findAllByNameCityAndAgeBetweenAndIdNot(nameCity, age, age2, id);
+    }
+
+    @Override
     public List<People> findAllBy() {
         return peopleRepository.findAllBy();
     }

@@ -21,7 +21,10 @@ public class People {
     @Column(name = "age")
     private int age;
 
-    public People(long id, String name, String nameCity, String bio,int age) {
+    @Column(name = "account_inst")
+    private String nameInstagram;
+
+    public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;
         this.name = name;
         this.nameCity = nameCity;
@@ -39,6 +42,14 @@ public class People {
 
     public People() {
 
+    }
+
+    public String getNameInstagram() {
+        return nameInstagram;
+    }
+
+    public void setNameInstagram(String nameInstagram) {
+        this.nameInstagram = nameInstagram;
     }
 
     public long getId() {
@@ -81,6 +92,7 @@ public class People {
                 ", nameCity='" + nameCity + '\'' +
                 ", bio='" + bio + '\'' +
                 ", age=" + age +
+                ", nameInstagram='" + nameInstagram + '\'' +
                 '}';
     }
 }
