@@ -11,7 +11,7 @@ public class PeopleImpl implements PeopleService {
     private PeopleRepository peopleRepository;
 
     @Override
-    public List<People> findById(long id) {
+    public People findById(long id) {
         return peopleRepository.findById(id);
     }
 

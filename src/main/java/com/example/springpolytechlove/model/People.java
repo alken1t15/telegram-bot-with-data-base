@@ -1,10 +1,12 @@
 package com.example.springpolytechlove.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.springpolytechlove.model.modelpeoplelike.PeopleLike;
+import jakarta.persistence.*;
+import lombok.Data;
 
+import java.util.List;
+
+@Data
 @Entity
 @Table(name = "people")
 public class People {
@@ -24,6 +26,10 @@ public class People {
     @Column(name = "account_inst")
     private String nameInstagram;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_main_profile")
+    private List<PeopleLike> peopleLike;
+
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;
         this.name = name;
@@ -32,67 +38,8 @@ public class People {
         this.age = age;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
     public People() {
 
     }
 
-    public String getNameInstagram() {
-        return nameInstagram;
-    }
-
-    public void setNameInstagram(String nameInstagram) {
-        this.nameInstagram = nameInstagram;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getNameCity() {
-        return nameCity;
-    }
-
-    public void setNameCity(String nameCity) {
-        this.nameCity = nameCity;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    @Override
-    public String toString() {
-        return "People{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", nameCity='" + nameCity + '\'' +
-                ", bio='" + bio + '\'' +
-                ", age=" + age +
-                ", nameInstagram='" + nameInstagram + '\'' +
-                '}';
-    }
 }
