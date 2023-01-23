@@ -16,11 +16,11 @@ public class PeopleLike {
     private Long mainPeople;
 
     @Column(name = "id_people_for_like")
-    private Long peopleYouLike;
+    private Long like;
 
-    public PeopleLike(Long mainPeople, Long peopleYouLike) {
+    public PeopleLike(Long mainPeople, Long peopleLike) {
         this.mainPeople = mainPeople;
-        this.peopleYouLike = peopleYouLike;
+        this.like = peopleLike;
     }
 
     public PeopleLike() {

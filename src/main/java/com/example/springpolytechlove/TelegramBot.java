@@ -179,6 +179,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     statusEditProfile = true;
                     break;
                 case "❤":
+                    //TODO Лайк
                     sendMessage(update.getMessage().getChatId(), "Находится в разработке");
                     findPeople(update.getMessage().getChatId(), update.getMessage().getChat().getId(),"❤");
                     break;
@@ -190,7 +191,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             "2. Моя анкета");
                     break;
                 case "1 \uD83D\uDC4D":
-                    likeForPeople(update.getMessage().getChat().getId(),"1");
+                    likeForPeople(update.getMessage().getChat().getId(),"1",update.getMessage().getChatId());
                     if (people1.getNameInstagram() != null && !people1.getNameInstagram().isEmpty()) {
                         sendMessageEdit(update.getMessage().getChatId(), people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
                     } else {
@@ -198,19 +199,25 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                     break;
                 case "2 \uD83D\uDE34":
-                    likeForPeople(update.getMessage().getChat().getId(),"2");
+                    likeForPeople(update.getMessage().getChat().getId(),"2",update.getMessage().getChatId());
             }
         }
     }
 
     //TODO Для взаимных лайков надо сделать
-    private void likeForPeople(Long id,String message){
-        if(message.equals("2")){
-//            peopleLikeService.removeByMainPeople();
+    private void likeForPeople(Long id,String messages,Long chatId){
+        if(messages.equals("2")){
+            List<PeopleLike> peopleLikes = peopleLikeService.findByMainPeople(id);
+            PeopleLike peopleLike = peopleLikes.get(0);
+            peopleLikeService.removeByMainPeopleAndLike(peopleLike.getMainPeople(),peopleLike.getLike());
         }
         List<PeopleLike> peopleLikes = peopleLikeService.findByMainPeople(id);
         People people1 = peopleService.findById(peopleLikes.get(0).getMainPeople());
-
+        if (people1.getNameInstagram() != null && !people1.getNameInstagram().isEmpty()) {
+            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
+        } else {
+            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
+        }
     }
 
     private void findPeople(Long chatId, long id,String message) {

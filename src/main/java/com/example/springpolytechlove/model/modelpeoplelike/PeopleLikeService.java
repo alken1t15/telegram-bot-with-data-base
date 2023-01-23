@@ -9,5 +9,5 @@ public interface PeopleLikeService {
 
     void save(PeopleLike peopleLike);
 
-    void removeByMainPeople(long id);
+    void removeByMainPeopleAndLike(long id,long idTwo);
 }

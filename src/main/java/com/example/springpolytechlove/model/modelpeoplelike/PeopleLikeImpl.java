@@ -24,7 +24,9 @@ public class PeopleLikeImpl implements PeopleLikeService{
     }
 
     @Override
-    public void removeByMainPeople(long id) {
-        peopleLikeRepository.removeByMainPeople(id);
+    public void removeByMainPeopleAndLike(long id, long idTwo) {
+        removeByMainPeopleAndLike(id,idTwo);
     }
+
+
 }

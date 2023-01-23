@@ -8,5 +8,5 @@ import java.util.List;
 public interface PeopleLikeRepository extends JpaRepository<PeopleLike,Long> {
     List<PeopleLike> findByMainPeople(long id);
 
-    void removeByMainPeople(long id);
+    void removeByMainPeopleAndLike(long id,long idTwo);
 }
