@@ -26,9 +26,8 @@ public class People {
     @Column(name = "account_inst")
     private String nameInstagram;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_main_profile")
-    private List<PeopleLike> peopleLike;
+    @Column(name = "id_last_account_find")
+    private Long idLastAccountFind;
 
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;

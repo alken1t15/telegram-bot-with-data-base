@@ -13,14 +13,14 @@ public class PeopleLike {
 
     @Id
     @Column(name = "id_main_profile")
-    private Long mainPeople;
+    private Long me;
 
     @Column(name = "id_people_for_like")
-    private Long like;
+    private Long you;
 
-    public PeopleLike(Long mainPeople, Long peopleLike) {
-        this.mainPeople = mainPeople;
-        this.like = peopleLike;
+    public PeopleLike(Long idILike, Long idYouLike) {
+        this.me = idILike;
+        this.you = idYouLike;
     }
 
     public PeopleLike() {

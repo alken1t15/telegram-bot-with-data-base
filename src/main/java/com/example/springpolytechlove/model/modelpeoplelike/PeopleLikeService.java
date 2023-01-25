@@ -5,9 +5,10 @@ import com.example.springpolytechlove.model.People;
 import java.util.List;
 
 public interface PeopleLikeService {
-    List<PeopleLike> findByMainPeople(long id);
+    List<PeopleLike> findByYou(long id);
 
     void save(PeopleLike peopleLike);
 
-    void removeByMainPeopleAndLike(long id,long idTwo);
+    void removeByMeAndYou(PeopleLike peopleLike);
+
 }

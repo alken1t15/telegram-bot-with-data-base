@@ -14,8 +14,8 @@ public class PeopleLikeImpl implements PeopleLikeService{
     private PeopleLikeRepository peopleLikeRepository;
 
     @Override
-    public List<PeopleLike> findByMainPeople(long id) {
-        return peopleLikeRepository.findByMainPeople(id);
+    public List<PeopleLike> findByYou(long id) {
+        return peopleLikeRepository.findByYou(id);
     }
 
     @Override
@@ -24,9 +24,8 @@ public class PeopleLikeImpl implements PeopleLikeService{
     }
 
     @Override
-    public void removeByMainPeopleAndLike(long id, long idTwo) {
-        removeByMainPeopleAndLike(id,idTwo);
+    public void removeByMeAndYou(PeopleLike peopleLike) {
+        peopleLikeRepository.delete(peopleLike);
     }
-
 
 }

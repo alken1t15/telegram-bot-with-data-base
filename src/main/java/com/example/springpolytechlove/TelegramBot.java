@@ -28,7 +28,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private PeopleLikeService peopleLikeService;
 
-    private People people;
     private boolean statusInput = false;
 
     private boolean editBio = false;
@@ -54,190 +53,189 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        String getTextMessage = update.getMessage().getText();
+        Long getChatIdUser = update.getMessage().getChatId();
+        Long getIdUser = update.getMessage().getChat().getId();
+        People people = peopleService.findById(getIdUser);
         if (statusInput) {
             if (people.getAge() == 0) {
-                int age = Integer.parseInt(update.getMessage().getText());
+                int age = Integer.parseInt(getTextMessage);
                 people.setAge(age);
-                sendMessage(update.getMessage().getChatId(), "Введите ваше имя");
-            } else if (people.getName() == null || people.getName().isEmpty()) {
-                String name = update.getMessage().getText();
-                people.setName(name);
-                sendMessage(update.getMessage().getChatId(), "Введите ваш город");
-            } else if (people.getNameCity() == null || people.getNameCity().isEmpty()) {
-                String city = update.getMessage().getText();
-                people.setNameCity(city);
-                sendMessage(update.getMessage().getChatId(), "Расскажи немного о себе");
-            } else if (people.getBio() == null || people.getBio().isEmpty()) {
-                String bio = update.getMessage().getText();
-                people.setBio(bio);
-                System.out.println(people);
-                peopleService.save(people);
+                sendMessage(getChatIdUser, "Введите ваше имя");
+            } else if (people.getName().isEmpty()) {
+                people.setName(getTextMessage);
+                sendMessage(getChatIdUser, "Введите ваш город");
+            } else if (people.getNameCity().isEmpty()) {
+                people.setNameCity(getTextMessage);
+                sendMessage(getChatIdUser, "Расскажи немного о себе");
+            } else if (people.getBio().isEmpty()) {
+                people.setBio(getTextMessage);
                 statusInput = false;
-                sendMainMessage(update.getMessage().getChatId(), "1. Смотреть анкеты\n" +
+                sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                         "2. Моя анкета");
                 statusEditProfile = false;
             }
+            peopleService.save(people);
         } else if (statusEditProfile) {
             if (update.hasMessage() && update.getMessage().hasText()) {
-                String messageText = update.getMessage().getText();
-                switch (messageText) {
+                switch (getTextMessage) {
                     case "1":
-                        People people1 = peopleService.findById(update.getMessage().getChat().getId());
-                        people = people1;
                         people.setAge(0);
-                        people.setName(null);
-                        people.setNameCity(null);
-                        people.setBio(null);
-                        sendMessage(update.getMessage().getChatId(), "Сколько тебе лет?");
+                        people.setName("");
+                        people.setNameCity("");
+                        people.setBio("");
+                        peopleService.save(people);
+                        sendMessage(getChatIdUser, "Сколько тебе лет?");
                         statusInput = true;
                         statusEditProfile = false;
                         break;
                     case "2":
-                        sendMessageEdit(update.getMessage().getChatId(), "Находится в разработке");
+                        sendMessageEdit(getChatIdUser, "Находится в разработке");
                         break;
                     case "3":
-                        People people2 = peopleService.findById(update.getMessage().getChat().getId());
-                        people = people2;
-                        sendMessageForEdit(update.getMessage().getChatId(), "Расскажи о себе, кого хочешь найти, чем предлагаешь заняться");
+                        sendMessageForEdit(getChatIdUser, "Расскажи о себе, кого хочешь найти, чем предлагаешь заняться");
                         editBio = true;
                         statusEditProfile = false;
                         break;
                     case "4":
-                        People people3 = peopleService.findById(update.getMessage().getChat().getId());
-                        people = people3;
-                        sendMessage(update.getMessage().getChatId(), "\n" +
+                        sendMessage(getChatIdUser, "\n" +
                                 "Введите имя пользователя в Instagram");
                         statusInstagram = true;
                         statusEditProfile = false;
                         break;
                     case "5":
-                        findPeople(update.getMessage().getChatId(), update.getMessage().getChat().getId(),"\uD83D\uDC4E");
+                        findPeople(getChatIdUser, "\uD83D\uDC4E");
                         statusEditProfile = false;
                         break;
                 }
             }
         } else if (statusInstagram) {
-            String messageText = update.getMessage().getText();
-            people.setNameInstagram(messageText);
+            people.setNameInstagram(getTextMessage);
             peopleService.save(people);
-            sendMainMessage(update.getMessage().getChatId(), "1. Смотреть анкеты\n" +
+            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                     "2. Моя анкета");
+            statusInstagram = false;
         } else if (editBio) {
-            String messageText = update.getMessage().getText();
-            people.setBio(messageText);
+            people.setBio(getTextMessage);
             peopleService.save(people);
-            sendMainMessage(update.getMessage().getChatId(), "1. Смотреть анкеты\n" +
+            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                     "2. Моя анкета");
             editBio = false;
         } else if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            // People people = peopleService.findById(update.getMessage().getChat().getId()).get(0);
-            People people1 = peopleService.findById(update.getMessage().getChat().getId());
-            switch (messageText) {
+            switch (getTextMessage) {
                 case "Привет":
-                    System.out.println(update);
                     String message = EmojiParser.parseToUnicode("Привет " + update.getMessage().getChat().getFirstName() + " :blush:");
-                    sendMessage(update.getMessage().getChatId(), message);
+                    sendMessage(getChatIdUser, message);
                     break;
                 case "/start":
                     String message2 = EmojiParser.parseToUnicode("Выбери язык :point_down:");
-                    sendMessStart(update.getMessage().getChatId(), message2);
+                    sendMessStart(getChatIdUser, message2);
                     break;
                 case "\uD83C\uDDF7\uD83C\uDDFA Русский":
-                        if(people1!= null) {
-                            sendMainMessage(update.getMessage().getChatId(), "1. Смотреть анкеты\n" +
+                        if(people!= null) {
+                            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                                     "2. Моя анкета");
                         }
                         else {
                             String message3 = EmojiParser.parseToUnicode("Уже миллионы людей знакомятся в\n" +
                                     "PolytechLove:heart_eyes:\n" +
                                     "\nЯ помогу найте тебе пару или просто друзей");
-                            sendMessageRu(update.getMessage().getChatId(), message3);
+                            sendMessageRu(getChatIdUser, message3);
                         }
                     break;
                 case "\uD83D\uDC4C давай начнем":
                     statusInput = true;
                     people = new People();
-                    people.setId(update.getMessage().getChat().getId());
-                    sendMessage(update.getMessage().getChatId(), "Введите ваш возраст");
+                    people.setId(getIdUser);
+                    people.setName("");
+                    people.setNameCity("");
+                    people.setBio("");
+                    peopleService.save(people);
+                    sendMessage(getChatIdUser, "Введите ваш возраст");
                     break;
                 case "1":
-                    findPeople(update.getMessage().getChatId(), update.getMessage().getChat().getId(),"\uD83D\uDC4E");
+                    findPeople(getChatIdUser, "\uD83D\uDC4E");
                     break;
                 case "2":
-                    sendMessageEdit(update.getMessage().getChatId(), "Так выглядит твоя анкета:");
-                    if (people1.getNameInstagram() != null && !people1.getNameInstagram().isEmpty()) {
-                        sendMessageEdit(update.getMessage().getChatId(), people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
+                    sendMessageEdit(getChatIdUser, "Так выглядит твоя анкета:");
+                    if (people.getNameInstagram() != null && !people.getNameInstagram().isEmpty()) {
+                        sendMessageEdit(getChatIdUser, people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\ninst: " + people.getNameInstagram());
                     } else {
-                        sendMessageEdit(update.getMessage().getChatId(), people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
+                        sendMessageEdit(getChatIdUser, people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio());
                     }
-                    sendMessageEdit(update.getMessage().getChatId(), "1. Заполнить анкету заново.\n" +
+                    sendMessageEdit(getChatIdUser, "1. Заполнить анкету заново.\n" +
                             "2. Изменить фото/видео.\n" +
                             "3. Изменить текст анкеты.\n" +
                             "4. Привязка Instagram.\n" +
                             "5. Смотреть анкеты.");
                     statusEditProfile = true;
                     break;
+                //TODO Лайк который ты ставишь
                 case "❤":
-                    //TODO Лайк
-                    sendMessage(update.getMessage().getChatId(), "Находится в разработке");
-                    findPeople(update.getMessage().getChatId(), update.getMessage().getChat().getId(),"❤");
+                    findPeople(getChatIdUser,"❤");
                     break;
                 case "\uD83D\uDC4E":
-                    findPeople(update.getMessage().getChatId(), update.getMessage().getChat().getId(),"\uD83D\uDC4E");
+                    findPeople(getChatIdUser,"\uD83D\uDC4E");
                     break;
                 case "\uD83D\uDE34":
-                    sendMainMessage(update.getMessage().getChatId(), "1. Смотреть анкеты\n" +
+                    sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                             "2. Моя анкета");
                     break;
                 case "1 \uD83D\uDC4D":
-                    likeForPeople(update.getMessage().getChat().getId(),"1",update.getMessage().getChatId());
-                    if (people1.getNameInstagram() != null && !people1.getNameInstagram().isEmpty()) {
-                        sendMessageEdit(update.getMessage().getChatId(), people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
-                    } else {
-                        sendMessageEdit(update.getMessage().getChatId(), people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
-                    }
+                    likeForPeople(getChatIdUser,"1");
                     break;
                 case "2 \uD83D\uDE34":
-                    likeForPeople(update.getMessage().getChat().getId(),"2",update.getMessage().getChatId());
+                    likeForPeople(getChatIdUser,"2");
             }
         }
     }
 
     //TODO Для взаимных лайков надо сделать
-    private void likeForPeople(Long id,String messages,Long chatId){
+    private void likeForPeople(Long chatId,String messages){
         if(messages.equals("2")){
-            List<PeopleLike> peopleLikes = peopleLikeService.findByMainPeople(id);
+            List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
             PeopleLike peopleLike = peopleLikes.get(0);
-            peopleLikeService.removeByMainPeopleAndLike(peopleLike.getMainPeople(),peopleLike.getLike());
+            peopleLikeService.removeByMeAndYou(peopleLike);
+            return;
         }
-        List<PeopleLike> peopleLikes = peopleLikeService.findByMainPeople(id);
-        People people1 = peopleService.findById(peopleLikes.get(0).getMainPeople());
-        if (people1.getNameInstagram() != null && !people1.getNameInstagram().isEmpty()) {
-            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
-        } else {
+        System.out.println("До поиска");
+        List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
+        System.out.println("Список лайков");
+        People people1 = peopleService.findById(peopleLikes.get(0).getYou());
+        System.out.println("Список пользователя");
+        System.out.println(people1);
+        if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
             sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
+        } else {
+            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
         }
     }
 
-    private void findPeople(Long chatId, long id,String message) {
+    private void findPeople(Long chatId,String message) {
+        People peopleMain = peopleService.findById(chatId);
         if(message.equals("❤")){
-            peopleLikeService.save(new PeopleLike(people.getId(),id));
-            People people1 = peopleService.findById(people.getId());
-            sendMessageForLike(people.getId(),"Ты понравился "+ people1.getPeopleLike().size()+ " девушке, показать её?\n" +
+            System.out.println("Сердце");
+            People peopleYouLike = peopleService.findById(peopleMain.getIdLastAccountFind());
+            System.out.println(peopleYouLike);
+            System.out.println(chatId);
+            System.out.println(peopleYouLike.getId());
+            peopleLikeService.save(new PeopleLike(chatId,peopleYouLike.getId()));
+            System.out.println("Сохранение");
+            //TODO Доработать скольким ты понравился
+            sendMessageForLike(peopleYouLike.getId(),"Ты понравился "+ " девушке, показать её?\n" +
                     "\n1. Показать.\n2. Не хочу больше никого смотреть.");
         }
-        People people1 = peopleService.findById(id);
         try {
-            List<People> peopleList = peopleService.findAllByNameCityAndAgeBetweenAndIdNot(people1.getNameCity(), people1.getAge() - 3, people1.getAge() + 2, id);
+            List<People> peopleList = peopleService.findAllByNameCityAndAgeBetweenAndIdNot(peopleMain.getNameCity(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
             int randomNumber = (int) (Math.random() * peopleList.size());
             People people2 = peopleList.get(randomNumber);
-            people = people2;
             if (people2.getNameInstagram() != null && !people2.getNameInstagram().isEmpty()) {
                 sendMessageFind(chatId, people2.getName() + ", " + people2.getAge() + ", " + people2.getNameCity() + " - " + people2.getBio() + "\ninst: " + people2.getNameInstagram());
             } else {
                 sendMessageFind(chatId, people2.getName() + ", " + people2.getAge() + ", " + people2.getNameCity() + " - " + people2.getBio());
             }
+            peopleMain.setIdLastAccountFind(people2.getId());
+            peopleService.save(peopleMain);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -408,6 +406,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void sendMessageForEdit(long chatId, String textToSend) {
+        People people = peopleService.findById(chatId);
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
