@@ -132,16 +132,15 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessStart(getChatIdUser, message2);
                     break;
                 case "\uD83C\uDDF7\uD83C\uDDFA Русский":
-                        if(people!= null) {
-                            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                                    "2. Моя анкета");
-                        }
-                        else {
-                            String message3 = EmojiParser.parseToUnicode("Уже миллионы людей знакомятся в\n" +
-                                    "PolytechLove:heart_eyes:\n" +
-                                    "\nЯ помогу найте тебе пару или просто друзей");
-                            sendMessageRu(getChatIdUser, message3);
-                        }
+                    if (people != null) {
+                        sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
+                                "2. Моя анкета");
+                    } else {
+                        String message3 = EmojiParser.parseToUnicode("Уже миллионы людей знакомятся в\n" +
+                                "PolytechLove:heart_eyes:\n" +
+                                "\nЯ помогу найте тебе пару или просто друзей");
+                        sendMessageRu(getChatIdUser, message3);
+                    }
                     break;
                 case "\uD83D\uDC4C давай начнем":
                     statusInput = true;
@@ -172,27 +171,34 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 //TODO Лайк который ты ставишь
                 case "❤":
-                    findPeople(getChatIdUser,"❤");
+                    findPeople(getChatIdUser, "❤");
                     break;
                 case "\uD83D\uDC4E":
-                    findPeople(getChatIdUser,"\uD83D\uDC4E");
+                    findPeople(getChatIdUser, "\uD83D\uDC4E");
                     break;
                 case "\uD83D\uDE34":
                     sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
                             "2. Моя анкета");
                     break;
                 case "1 \uD83D\uDC4D":
-                    likeForPeople(getChatIdUser,"1");
+                    likeForPeople(getChatIdUser, "1");
                     break;
                 case "2 \uD83D\uDE34":
-                    likeForPeople(getChatIdUser,"2");
+                    likeForPeople(getChatIdUser, "2");
+                    break;
+                case "1 ❤":
+                    likeForPeopleBefore(getChatIdUser,"1");
+                    break;
+                case "3 \uD83D\uDC4E":
+                    likeForPeopleBefore(getChatIdUser,"3");
+                    break;
             }
         }
     }
 
     //TODO Для взаимных лайков надо сделать
-    private void likeForPeople(Long chatId,String messages){
-        if(messages.equals("2")){
+    private void likeForPeople(Long chatId, String messages) {
+        if (messages.equals("2")) {
             List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
             PeopleLike peopleLike = peopleLikes.get(0);
             peopleLikeService.removeByMeAndYou(peopleLike);
@@ -205,24 +211,65 @@ public class TelegramBot extends TelegramLongPollingBot {
         System.out.println("Список пользователя");
         System.out.println(people1);
         if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
-            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
+            sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
         } else {
-            sendMessageForLike(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
+            sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
         }
     }
 
-    private void findPeople(Long chatId,String message) {
+    private void likeForPeopleBefore(Long chatId, String messages){
+        if (messages.equals("3")) {
+            List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
+            PeopleLike peopleLike = peopleLikes.get(0);
+            peopleLikeService.removeByMeAndYou(peopleLike);
+            return;
+        }
+        else  if (messages.equals("1")){
+            List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
+            People people1 = peopleService.findById(peopleLikes.get(0).getYou());
+        }
+
+    }
+
+    private void sendMessageLikeForPeopleBefore(Long chatId, String messages){
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(messages);
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+
+        row.add("1 ❤");
+        row.add("3 \uD83D\uDC4E");
+        replyKeyboardMarkup.setResizeKeyboard(true);
+
+        keyboardRows.add(row);
+
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(replyKeyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void findPeople(Long chatId, String message) {
         People peopleMain = peopleService.findById(chatId);
-        if(message.equals("❤")){
+        if (message.equals("❤")) {
             System.out.println("Сердце");
             People peopleYouLike = peopleService.findById(peopleMain.getIdLastAccountFind());
             System.out.println(peopleYouLike);
             System.out.println(chatId);
             System.out.println(peopleYouLike.getId());
-            peopleLikeService.save(new PeopleLike(chatId,peopleYouLike.getId()));
+            peopleLikeService.save(new PeopleLike(chatId, peopleYouLike.getId()));
             System.out.println("Сохранение");
             //TODO Доработать скольким ты понравился
-            sendMessageForLike(peopleYouLike.getId(),"Ты понравился "+ " девушке, показать её?\n" +
+            sendMessageForLike(peopleYouLike.getId(), "Ты понравился " + " девушке, показать её?\n" +
                     "\n1. Показать.\n2. Не хочу больше никого смотреть.");
         }
         try {
@@ -241,7 +288,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageForLike(Long chatId, String textToSend){
+    private void sendMessageForLike(Long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(textToSend);

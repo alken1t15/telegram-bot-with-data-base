@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class PeopleLikeImpl implements PeopleLikeService{
+public class PeopleLikeImpl implements PeopleLikeService {
 
     @Autowired
     private PeopleLikeRepository peopleLikeRepository;

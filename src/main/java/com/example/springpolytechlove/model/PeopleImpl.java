@@ -21,11 +21,6 @@ public class PeopleImpl implements PeopleService {
     }
 
     @Override
-    public List<People> findAllBy() {
-        return peopleRepository.findAllBy();
-    }
-
-    @Override
     public void save(People people) {
         peopleRepository.save(people);
     }

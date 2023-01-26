@@ -7,7 +7,6 @@ public interface PeopleService {
 
     List<People> findAllByNameCityAndAgeBetweenAndIdNot(String nameCity, int age, int age2, long id);
 
-    List<People> findAllBy();
 
     void save(People people);
 }
