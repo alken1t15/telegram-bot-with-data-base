@@ -146,6 +146,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     statusInput = true;
                     people = new People();
                     people.setId(getIdUser);
+                    people.setUser(update.getMessage().getFrom().getUserName());
                     people.setName("");
                     people.setNameCity("");
                     people.setBio("");
@@ -187,10 +188,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                     likeForPeople(getChatIdUser, "2");
                     break;
                 case "1 ❤":
-                    likeForPeopleBefore(getChatIdUser,"1");
+                    likeForPeopleBefore(getChatIdUser, "1");
                     break;
                 case "3 \uD83D\uDC4E":
-                    likeForPeopleBefore(getChatIdUser,"3");
+                    likeForPeopleBefore(getChatIdUser, "3");
                     break;
             }
         }
@@ -204,12 +205,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             peopleLikeService.removeByMeAndYou(peopleLike);
             return;
         }
-        System.out.println("До поиска");
         List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
-        System.out.println("Список лайков");
-        People people1 = peopleService.findById(peopleLikes.get(0).getYou());
-        System.out.println("Список пользователя");
-        System.out.println(people1);
+        People people1 = peopleService.findById(peopleLikes.get(0).getMe());
         if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
             sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
         } else {
@@ -217,21 +214,26 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void likeForPeopleBefore(Long chatId, String messages){
+    private void likeForPeopleBefore(Long chatId, String messages) {
         if (messages.equals("3")) {
             List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
             PeopleLike peopleLike = peopleLikes.get(0);
             peopleLikeService.removeByMeAndYou(peopleLike);
             return;
-        }
-        else  if (messages.equals("1")){
+        } else if (messages.equals("1")) {
             List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
-            People people1 = peopleService.findById(peopleLikes.get(0).getYou());
+            PeopleLike peopleLike = peopleLikes.get(0);
+            People me = peopleService.findById(peopleLike.getMe());
+            People you = peopleService.findById(chatId);
+            //TODO ЗДЕСЬ
+            sendMessageLikeForPeopleBefore(chatId, "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + me.getUser() + " \uD83D\uDC97");
+            sendMessageLikeForPeopleBefore(peopleLike.getMe(), "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + you.getUser() + " \uD83D\uDC97");
+            peopleLikeService.removeByMeAndYou(peopleLike);
         }
 
     }
 
-    private void sendMessageLikeForPeopleBefore(Long chatId, String messages){
+    private void sendMessageLikeForPeopleBefore(Long chatId, String messages) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(messages);
@@ -261,13 +263,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void findPeople(Long chatId, String message) {
         People peopleMain = peopleService.findById(chatId);
         if (message.equals("❤")) {
-            System.out.println("Сердце");
             People peopleYouLike = peopleService.findById(peopleMain.getIdLastAccountFind());
-            System.out.println(peopleYouLike);
-            System.out.println(chatId);
-            System.out.println(peopleYouLike.getId());
             peopleLikeService.save(new PeopleLike(chatId, peopleYouLike.getId()));
-            System.out.println("Сохранение");
             //TODO Доработать скольким ты понравился
             sendMessageForLike(peopleYouLike.getId(), "Ты понравился " + " девушке, показать её?\n" +
                     "\n1. Показать.\n2. Не хочу больше никого смотреть.");

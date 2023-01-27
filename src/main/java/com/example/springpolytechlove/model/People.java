@@ -29,6 +29,9 @@ public class People {
     @Column(name = "id_last_account_find")
     private Long idLastAccountFind;
 
+    @Column(name = "user_name")
+    private String user;
+
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;
         this.name = name;
