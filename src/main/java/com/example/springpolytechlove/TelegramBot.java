@@ -64,6 +64,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessage(getChatIdUser, "Введите ваше имя");
             } else if (people.getName().isEmpty()) {
                 people.setName(getTextMessage);
+                sendMessageGender(getChatIdUser, "Введите годо хотите искать");
+            } else if (people.getGender().isEmpty()) {
+                people.setGender(getTextMessage);
                 sendMessage(getChatIdUser, "Введите ваш город");
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
@@ -197,6 +200,34 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    private void sendMessageGender(Long chatId, String messages){
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(messages);
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+
+        row.add("Пареней");
+        row.add("Девушек");
+        row.add("Всех");
+        replyKeyboardMarkup.setResizeKeyboard(true);
+
+        keyboardRows.add(row);
+
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(replyKeyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     //TODO Для взаимных лайков надо сделать
     private void likeForPeople(Long chatId, String messages) {
         if (messages.equals("2")) {
@@ -270,7 +301,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     "\n1. Показать.\n2. Не хочу больше никого смотреть.");
         }
         try {
-            List<People> peopleList = peopleService.findAllByNameCityAndAgeBetweenAndIdNot(peopleMain.getNameCity(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
+            List<People> peopleList = peopleService.findAllByNameCityAndGenderAndAgeBetweenAndIdNot(peopleMain.getNameCity(), peopleMain.getGender(),peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
             int randomNumber = (int) (Math.random() * peopleList.size());
             People people2 = peopleList.get(randomNumber);
             if (people2.getNameInstagram() != null && !people2.getNameInstagram().isEmpty()) {

@@ -9,5 +9,7 @@ public interface PeopleRepository extends JpaRepository<People, Long> {
 
     List<People> findAllByNameCityAndAgeBetweenAndIdNot(String nameCity, int age, int age2, long id);
 
+    List<People> findAllByNameCityAndGenderAndAgeBetweenAndIdNot(String nameCity, String gender, int age, int age2, long id);
+
     List<People> findAllBy();
 }

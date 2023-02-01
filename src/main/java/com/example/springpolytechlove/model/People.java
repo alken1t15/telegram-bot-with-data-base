@@ -17,6 +17,9 @@ public class People {
     private String name;
     @Column(name = "name_city")
     private String nameCity;
+
+    @Column(name = "gender")
+    private String gender;
     @Column(name = "bio")
     private String bio;
 
