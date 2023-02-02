@@ -20,6 +20,9 @@ public class People {
 
     @Column(name = "gender")
     private String gender;
+
+    @Column(name = "gender_find")
+    private String genderFind;
     @Column(name = "bio")
     private String bio;
 

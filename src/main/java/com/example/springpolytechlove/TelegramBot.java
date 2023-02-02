@@ -64,14 +64,34 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessage(getChatIdUser, "Введите ваше имя");
             } else if (people.getName().isEmpty()) {
                 people.setName(getTextMessage);
-                sendMessageGender(getChatIdUser, "Введите годо хотите искать");
+                sendMessageGender(getChatIdUser, "Кто вы?");
             } else if (people.getGender().isEmpty()) {
-                people.setGender(getTextMessage);
+                if (getTextMessage.equals("Я парень")){
+                    people.setGender("Парень");
+                }
+                else if (getTextMessage.equals("Я девушка")){
+                    people.setGender("Девушка");
+                }
                 sendMessage(getChatIdUser, "Введите ваш город");
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
+                sendMessageGenderFind(getChatIdUser, "Введите кого ищите");
+            }
+            else if (people.getGenderFind().isEmpty()){
+                if(getTextMessage.equals("Парней")){
+                    people.setGenderFind("Парень");
+                }
+                else if (getTextMessage.equals("Девушек"))
+                {
+                    people.setGenderFind("Всех");
+                }
+                else if (getTextMessage.equals("Всех"))
+                {
+                    people.setGenderFind("Девушка");
+                }
                 sendMessage(getChatIdUser, "Расскажи немного о себе");
-            } else if (people.getBio().isEmpty()) {
+            }
+            else if (people.getBio().isEmpty()) {
                 people.setBio(getTextMessage);
                 statusInput = false;
                 sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
@@ -210,7 +230,35 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         KeyboardRow row = new KeyboardRow();
 
-        row.add("Пареней");
+        row.add("Я парень");
+        row.add("Я девушка");
+        row.add("Всех");
+        replyKeyboardMarkup.setResizeKeyboard(true);
+
+        keyboardRows.add(row);
+
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(replyKeyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendMessageGenderFind(Long chatId, String messages){
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(messages);
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+
+        row.add("Парней");
         row.add("Девушек");
         row.add("Всех");
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -301,7 +349,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                     "\n1. Показать.\n2. Не хочу больше никого смотреть.");
         }
         try {
-            List<People> peopleList = peopleService.findAllByNameCityAndGenderAndAgeBetweenAndIdNot(peopleMain.getNameCity(), peopleMain.getGender(),peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
+            List<People> peopleList;
+            if(peopleMain.getGenderFind().equals("Парень") || peopleMain.getGenderFind().equals("Девушка")) {
+                 peopleList = peopleService.findAllByNameCityAndGenderAndAgeBetweenAndIdNot(peopleMain.getNameCity(), peopleMain.getGender(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
+            }
+            else {
+                peopleList = peopleService.findAllByNameCityAndAgeBetweenAndIdNot(peopleMain.getNameCity(),  peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
+            }
             int randomNumber = (int) (Math.random() * peopleList.size());
             People people2 = peopleList.get(randomNumber);
             if (people2.getNameInstagram() != null && !people2.getNameInstagram().isEmpty()) {
