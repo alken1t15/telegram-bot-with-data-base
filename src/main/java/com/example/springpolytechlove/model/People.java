@@ -12,7 +12,7 @@ import java.util.List;
 public class People {
     @Id
     @Column(name = "id")
-    private long id;
+    private Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "name_city")
@@ -25,9 +25,8 @@ public class People {
     private String genderFind;
     @Column(name = "bio")
     private String bio;
-
     @Column(name = "age")
-    private int age;
+    private Integer age;
 
     @Column(name = "account_inst")
     private String nameInstagram;
@@ -37,6 +36,18 @@ public class People {
 
     @Column(name = "user_name")
     private String user;
+
+    @Column(name = "status_input")
+    private Boolean statusInput;
+
+    @Column(name = "edit_bio")
+    private Boolean editBio;
+
+    @Column(name = "status_edit_profile")
+    private Boolean statusEditProfile;
+
+    @Column(name = "status_instagram")
+    private Boolean statusInstagram;
 
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;

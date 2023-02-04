@@ -17,7 +17,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -28,13 +27,13 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private PeopleLikeService peopleLikeService;
 
-    private boolean statusInput = false;
+    private boolean statusInput;
 
-    private boolean editBio = false;
+    private boolean editBio;
 
-    private boolean statusEditProfile = false;
+    private boolean statusEditProfile;
 
-    private boolean statusInstagram = false;
+    private boolean statusInstagram;
     final BotConfig config;
 
     public TelegramBot(BotConfig config) {
@@ -57,14 +56,27 @@ public class TelegramBot extends TelegramLongPollingBot {
         Long getChatIdUser = update.getMessage().getChatId();
         Long getIdUser = update.getMessage().getChat().getId();
         People people = peopleService.findById(getIdUser);
+        if(people!= null) {
+            statusInput = people.getStatusInput();
+            editBio = people.getEditBio();
+            statusEditProfile = people.getStatusEditProfile();
+            statusInstagram = people.getStatusInstagram();
+        }
         if (statusInput) {
             if (people.getAge() == 0) {
-                int age = Integer.parseInt(getTextMessage);
-                people.setAge(age);
-                sendMessage(getChatIdUser, "Введите ваше имя");
+                try {
+                    int age = Integer.parseInt(getTextMessage);
+                    if (age<0||age>100){
+                        throw new NullPointerException();
+                    }
+                    people.setAge(age);
+                    sendMessage(getChatIdUser, "Введите ваше имя");
+                }catch (NullPointerException e){
+                    sendMessage(getChatIdUser, "Введите ваш возраст");
+                }
             } else if (people.getName().isEmpty()) {
                 people.setName(getTextMessage);
-                sendMessageGender(getChatIdUser, "Кто вы?");
+                sendMessageGender(getChatIdUser);
             } else if (people.getGender().isEmpty()) {
                 if (getTextMessage.equals("Я парень")){
                     people.setGender("Парень");
@@ -72,78 +84,71 @@ public class TelegramBot extends TelegramLongPollingBot {
                 else if (getTextMessage.equals("Я девушка")){
                     people.setGender("Девушка");
                 }
+                else {
+                    sendMessageGender(getChatIdUser);
+                }
                 sendMessage(getChatIdUser, "Введите ваш город");
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
-                sendMessageGenderFind(getChatIdUser, "Введите кого ищите");
+                sendMessageGenderFind(getChatIdUser);
             }
             else if (people.getGenderFind().isEmpty()){
-                if(getTextMessage.equals("Парней")){
-                    people.setGenderFind("Парень");
-                }
-                else if (getTextMessage.equals("Девушек"))
-                {
-                    people.setGenderFind("Всех");
-                }
-                else if (getTextMessage.equals("Всех"))
-                {
-                    people.setGenderFind("Девушка");
+                switch (getTextMessage) {
+                    case "Парней" -> people.setGenderFind("Парень");
+                    case "Девушек" -> people.setGenderFind("Всех");
+                    case "Всех" -> people.setGenderFind("Девушка");
+                    default -> sendMessageGenderFind(getChatIdUser);
                 }
                 sendMessage(getChatIdUser, "Расскажи немного о себе");
             }
             else if (people.getBio().isEmpty()) {
                 people.setBio(getTextMessage);
-                statusInput = false;
-                sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                        "2. Моя анкета");
-                statusEditProfile = false;
+                people.setStatusInput(false);
+                sendMainMessage(getChatIdUser);
+                people.setStatusEditProfile(false);
             }
             peopleService.save(people);
         } else if (statusEditProfile) {
             if (update.hasMessage() && update.getMessage().hasText()) {
                 switch (getTextMessage) {
-                    case "1":
+                    case "1" -> {
                         people.setAge(0);
                         people.setName("");
                         people.setNameCity("");
                         people.setBio("");
                         peopleService.save(people);
                         sendMessage(getChatIdUser, "Сколько тебе лет?");
-                        statusInput = true;
-                        statusEditProfile = false;
-                        break;
-                    case "2":
-                        sendMessageEdit(getChatIdUser, "Находится в разработке");
-                        break;
-                    case "3":
-                        sendMessageForEdit(getChatIdUser, "Расскажи о себе, кого хочешь найти, чем предлагаешь заняться");
-                        editBio = true;
-                        statusEditProfile = false;
-                        break;
-                    case "4":
+                        people.setStatusInput(true);
+                        people.setStatusEditProfile(false);
+                    }
+                    case "2" -> sendMessageEdit(getChatIdUser, "Находится в разработке");
+                    case "3" -> {
+                        sendMessageForEdit(getChatIdUser);
+                        people.setEditBio(true);
+                        people.setStatusEditProfile(false);
+                    }
+                    case "4" -> {
                         sendMessage(getChatIdUser, "\n" +
                                 "Введите имя пользователя в Instagram");
-                        statusInstagram = true;
-                        statusEditProfile = false;
-                        break;
-                    case "5":
+                        people.setStatusEditProfile(false);
+                        people.setStatusInstagram(true);
+                    }
+                    case "5" -> {
                         findPeople(getChatIdUser, "\uD83D\uDC4E");
-                        statusEditProfile = false;
-                        break;
+                        people.setStatusEditProfile(false);
+                    }
                 }
             }
         } else if (statusInstagram) {
             people.setNameInstagram(getTextMessage);
             peopleService.save(people);
-            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                    "2. Моя анкета");
-            statusInstagram = false;
+            sendMainMessage(getChatIdUser);
+            people.setStatusInstagram(false);
         } else if (editBio) {
             people.setBio(getTextMessage);
             peopleService.save(people);
-            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                    "2. Моя анкета");
-            editBio = false;
+            sendMainMessage(getChatIdUser);
+            people.setEditBio(false);
         } else if (update.hasMessage() && update.getMessage().hasText()) {
             switch (getTextMessage) {
                 case "Привет":
@@ -156,8 +161,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "\uD83C\uDDF7\uD83C\uDDFA Русский":
                     if (people != null) {
-                        sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                                "2. Моя анкета");
+                        sendMainMessage(getChatIdUser);
                     } else {
                         String message3 = EmojiParser.parseToUnicode("Уже миллионы людей знакомятся в\n" +
                                 "PolytechLove:heart_eyes:\n" +
@@ -166,13 +170,16 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                     break;
                 case "\uD83D\uDC4C давай начнем":
-                    statusInput = true;
                     people = new People();
                     people.setId(getIdUser);
                     people.setUser(update.getMessage().getFrom().getUserName());
                     people.setName("");
                     people.setNameCity("");
                     people.setBio("");
+                    people.setStatusInput(true);
+                    people.setEditBio(false);
+                    people.setStatusEditProfile(false);
+                    people.setStatusInstagram(false);
                     peopleService.save(people);
                     sendMessage(getChatIdUser, "Введите ваш возраст");
                     break;
@@ -191,7 +198,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             "3. Изменить текст анкеты.\n" +
                             "4. Привязка Instagram.\n" +
                             "5. Смотреть анкеты.");
-                    statusEditProfile = true;
+                    people.setStatusEditProfile(true);
                     break;
                 //TODO Лайк который ты ставишь
                 case "❤":
@@ -201,8 +208,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     findPeople(getChatIdUser, "\uD83D\uDC4E");
                     break;
                 case "\uD83D\uDE34":
-                    sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n" +
-                            "2. Моя анкета");
+                    sendMainMessage(getChatIdUser);
                     break;
                 case "1 \uD83D\uDC4D":
                     likeForPeople(getChatIdUser, "1");
@@ -216,14 +222,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "3 \uD83D\uDC4E":
                     likeForPeopleBefore(getChatIdUser, "3");
                     break;
+                default: sendMessage(getChatIdUser,"Такой команды нету!");
             }
+        }
+        if (people!=null) {
+            peopleService.save(people);
         }
     }
 
-    private void sendMessageGender(Long chatId, String messages){
+    private void sendMessageGender(Long chatId){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText(messages);
+        message.setText("Кто вы?");
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -248,10 +258,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageGenderFind(Long chatId, String messages){
+    private void sendMessageGenderFind(Long chatId){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText(messages);
+        message.setText("Введите кого ищите");
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -345,8 +355,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             People peopleYouLike = peopleService.findById(peopleMain.getIdLastAccountFind());
             peopleLikeService.save(new PeopleLike(chatId, peopleYouLike.getId()));
             //TODO Доработать скольким ты понравился
-            sendMessageForLike(peopleYouLike.getId(), "Ты понравился " + " девушке, показать её?\n" +
-                    "\n1. Показать.\n2. Не хочу больше никого смотреть.");
+            sendMessageForLike(peopleYouLike.getId());
         }
         try {
             List<People> peopleList;
@@ -370,10 +379,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageForLike(Long chatId, String textToSend) {
+    private void sendMessageForLike(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText(textToSend);
+        message.setText("Ты понравился  девушке, показать её?\n\n1. Показать.\n2. Не хочу больше никого смотреть.");
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -456,10 +465,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMainMessage(Long chatId, String textToSend) {
+    private void sendMainMessage(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText(textToSend);
+        message.setText("1. Смотреть анкеты\n2. Моя анкета");
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -534,11 +543,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageForEdit(long chatId, String textToSend) {
+    private void sendMessageForEdit(long chatId) {
         People people = peopleService.findById(chatId);
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText(textToSend);
+        message.setText("Расскажи о себе, кого хочешь найти, чем предлагаешь заняться");
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
