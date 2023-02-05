@@ -8,6 +8,5 @@ public interface PeopleService {
     List<People> findAllByNameCityAndAgeBetweenAndIdNot(String nameCity, int age, int age2, long id);
 
     List<People> findAllByNameCityAndGenderAndAgeBetweenAndIdNot(String nameCity, String gender, int age, int age2, long id);
-
     void save(People people);
 }

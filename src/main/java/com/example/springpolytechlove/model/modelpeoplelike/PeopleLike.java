@@ -18,9 +18,18 @@ public class PeopleLike {
     @Column(name = "id_people_for_like")
     private Long you;
 
+    @Column(name = "message")
+    private String message;
+
     public PeopleLike(Long idILike, Long idYouLike) {
         this.me = idILike;
         this.you = idYouLike;
+    }
+
+    public PeopleLike(Long idILike, Long idYouLike,String message) {
+        this.me = idILike;
+        this.you = idYouLike;
+        this.message = message;
     }
 
     public PeopleLike() {

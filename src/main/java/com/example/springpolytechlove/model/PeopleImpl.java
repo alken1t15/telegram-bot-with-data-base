@@ -2,6 +2,7 @@ package com.example.springpolytechlove.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,6 +28,10 @@ public class PeopleImpl implements PeopleService {
 
     @Override
     public void save(People people) {
+        peopleRepository.save(people);
+    }
+
+    public  void editSave(People people){
         peopleRepository.save(people);
     }
 }

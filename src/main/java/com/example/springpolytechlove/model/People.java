@@ -1,16 +1,20 @@
 package com.example.springpolytechlove.model;
 
-import com.example.springpolytechlove.model.modelpeoplelike.PeopleLike;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.List;
 
-@Data
+@ToString
+@Getter
+@Setter
 @Entity
 @Table(name = "people")
 public class People {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
     @Column(name = "name")
@@ -48,6 +52,12 @@ public class People {
 
     @Column(name = "status_instagram")
     private Boolean statusInstagram;
+
+    @Column(name = "message_like_status")
+    private Boolean messageLikeStatus;
+
+    @Column(name = "message_like")
+    private String messageLike;
 
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;
