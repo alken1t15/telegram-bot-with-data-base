@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class PeopleImpl implements PeopleService {
@@ -12,26 +13,22 @@ public class PeopleImpl implements PeopleService {
     private PeopleRepository peopleRepository;
 
     @Override
-    public People findById(long id) {
-        return peopleRepository.findById(id);
+    public People findByIdAccount(long idAccount) {
+        return peopleRepository.findByIdAccount(idAccount);
     }
 
     @Override
-    public List<People> findAllByNameCityAndAgeBetweenAndIdNot(String nameCity, int age, int age2, long id) {
-        return peopleRepository.findAllByNameCityAndAgeBetweenAndIdNot(nameCity, age, age2, id);
+    public List<People> findAllByNameCityAndAgeBetweenAndIdAccountNot(String nameCity, int age, int age2, long idAccount) {
+        return peopleRepository.findAllByNameCityAndAgeBetweenAndIdAccountNot(nameCity, age, age2, idAccount);
     }
 
     @Override
-    public List<People> findAllByNameCityAndGenderAndAgeBetweenAndIdNot(String nameCity, String gender, int age, int age2, long id) {
-        return peopleRepository.findAllByNameCityAndGenderAndAgeBetweenAndIdNot(nameCity, gender,age, age2, id);
+    public List<People> findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(String nameCity, String gender, int age, int age2, long idAccount) {
+        return peopleRepository.findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(nameCity, gender,age, age2, idAccount);
     }
 
     @Override
-    public void save(People people) {
-        peopleRepository.save(people);
-    }
-
-    public  void editSave(People people){
+    public void saved(People people) {
         peopleRepository.save(people);
     }
 }

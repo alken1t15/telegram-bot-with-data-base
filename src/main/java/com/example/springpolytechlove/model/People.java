@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Random;
+
 
 @ToString
 @Getter
@@ -15,8 +17,9 @@ import lombok.ToString;
 public class People {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
+    @Column(name = "id_account")
+    private Long idAccount;
     @Column(name = "name")
     private String name;
     @Column(name = "name_city")
@@ -35,8 +38,8 @@ public class People {
     @Column(name = "account_inst")
     private String nameInstagram;
 
-    @Column(name = "id_last_account_find")
-    private Long idLastAccountFind;
+    @Column(name = "account_find")
+    private Long accountFind;
 
     @Column(name = "user_name")
     private String user;
