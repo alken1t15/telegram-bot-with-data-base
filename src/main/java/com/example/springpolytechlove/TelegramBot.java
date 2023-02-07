@@ -73,9 +73,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                         throw new NullPointerException();
                     }
                     people.setAge(age);
-                    sendMessageEdit(getChatIdUser, "Введите ваше имя",people);
+                    sendMessageEdit(getChatIdUser, "Введите ваше имя", people);
                 } catch (NullPointerException e) {
-                    sendMessageEdit(getChatIdUser, "Введите ваш возраст",people);
+                    sendMessageEdit(getChatIdUser, "Введите ваш возраст", people);
                 }
             } else if (people.getName().isEmpty()) {
                 people.setName(getTextMessage);
@@ -88,7 +88,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     sendMessageGender(getChatIdUser);
                 }
-                sendMessageEdit(getChatIdUser, "Введите ваш город",people);
+                sendMessageEdit(getChatIdUser, "Введите ваш город", people);
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
                 sendMessageGenderFind(getChatIdUser);
@@ -99,11 +99,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "Всех" -> people.setGenderFind("Девушка");
                     default -> sendMessageGenderFind(getChatIdUser);
                 }
-                sendMessageEdit(getChatIdUser, "Расскажи немного о себе",people);
+                sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
             } else if (people.getBio().isEmpty()) {
                 people.setBio(getTextMessage);
                 people.setStatusInput(false);
-                sendMainMessage(getChatIdUser,"1. Смотреть анкеты\n2. Моя анкета");
+                sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
                 people.setStatusEditProfile(false);
             }
         } else if (statusEditProfile) {
@@ -140,11 +140,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         } else if (statusInstagram) {
             people.setNameInstagram(getTextMessage);
-            sendMainMessage(getChatIdUser,"1. Смотреть анкеты\n2. Моя анкета");
+            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
             people.setStatusInstagram(false);
         } else if (editBio) {
             people.setBio(getTextMessage);
-            sendMainMessage(getChatIdUser,"1. Смотреть анкеты\n2. Моя анкета");
+            sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
             people.setEditBio(false);
         } else if (messageLikeStatus) {
             people.setMessageLike(getTextMessage);
@@ -162,7 +162,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "\uD83C\uDDF7\uD83C\uDDFA Русский":
                     if (people != null) {
-                        sendMainMessage(getChatIdUser,"1. Смотреть анкеты\n2. Моя анкета");
+                        sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
                     } else {
                         String message3 = EmojiParser.parseToUnicode("Уже миллионы людей знакомятся в\n" +
                                 "PolytechLove:heart_eyes:\n" +
@@ -183,7 +183,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     people.setStatusInstagram(false);
                     people.setMessageLikeStatus(false);
                     people.setAge(0);
-                    sendMessageEdit(getChatIdUser, "Введите ваш возраст",people);
+                    sendMessageEdit(getChatIdUser, "Введите ваш возраст", people);
                     break;
                 case "1":
                     people = findPeople(getChatIdUser, "\uD83D\uDC4E");
@@ -214,7 +214,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(getChatIdUser, "Введите сообщение которые вы хотите отправить");
                     break;
                 case "\uD83D\uDE34":
-                    sendMainMessage(getChatIdUser,"1. Смотреть анкеты\n2. Моя анкета");
+                    sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
                     break;
                 case "1 \uD83D\uDC4D":
                     likeForPeople(getChatIdUser, "1");
@@ -249,18 +249,17 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
         People people1 = peopleService.findByIdAccount(peopleLikes.get(0).getMe());
-        if(peopleLikes.get(0).getMessage()== null) {
+        if (peopleLikes.get(0).getMessage() == null) {
             if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
                 sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
             } else {
                 sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
             }
-        }
-        else {
+        } else {
             if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() +"\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
+                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
             } else {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram()+"\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
+                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
             }
         }
     }
@@ -319,7 +318,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     //TODO ПЕРЕДЕЛАТЬ ЛОГИКУ ДЛЯ ЗАНОВО ЗАПОЛНЕНИЯ ПРОФИЛЯ
-    private void sendMessageEdit(Long chatId,String text,People people) {
+    private void sendMessageEdit(Long chatId, String text, People people) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
@@ -331,16 +330,13 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (!people.getName().isEmpty() && text.equals("Введите ваше имя")) {
 
             row.add(people.getName());
-        }
-        else if(people.getAge() != 0 && text.equals("Введите ваше имя")) {
+        } else if (people.getAge() != 0 && text.equals("Введите ваше имя")) {
 
             row.add(String.valueOf(people.getAge()));
-        }
-        else if(!people.getNameCity().isEmpty() && text.equals("Введите ваше имя")) {
+        } else if (!people.getNameCity().isEmpty() && text.equals("Введите ваше имя")) {
 
             row.add(people.getNameCity());
-        }
-        else if(!people.getBio().isEmpty() && text.equals("Расскажи немного о себе")) {
+        } else if (!people.getBio().isEmpty() && text.equals("Расскажи немного о себе")) {
 
             row.add(people.getBio());
         }
@@ -529,7 +525,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMainMessage(Long chatId,String text) {
+    private void sendMainMessage(Long chatId, String text) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
