@@ -9,12 +9,16 @@ import com.vdurmont.emoji.EmojiParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +58,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        Message message33 = update.getMessage();
         String getTextMessage = update.getMessage().getText();
         Long getChatIdUser = update.getMessage().getChatId();
         Long getIdUser = update.getMessage().getChat().getId();
@@ -91,8 +96,22 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessageEdit(getChatIdUser, "Введите ваш город", people);
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
+                sendMessage(getChatIdUser,"Пришлите мне фотографию");
+            }else if (people.getImg()==null){
+                String fileId = message33.getPhoto().get(message33.getPhoto().size() - 1).getFileId();
+                GetFile getFile = new GetFile();
+                getFile.setFileId(fileId);
+                org.telegram.telegrambots.meta.api.objects.File file=  null;
+                try {
+                    file = execute(getFile);
+                    File fileBytes = downloadFile(file.getFilePath());
+                    byte[] imageBytes = Files.readAllBytes(fileBytes.toPath());
+                    people.setImg(imageBytes);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 sendMessageGenderFind(getChatIdUser);
-            } else if (people.getGenderFind().isEmpty()) {
+            }else if (people.getGenderFind().isEmpty()) {
                 switch (getTextMessage) {
                     case "Парней" -> people.setGenderFind("Парень");
                     case "Девушек" -> people.setGenderFind("Всех");
@@ -177,6 +196,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     people.setName("");
                     people.setNameCity("");
                     people.setBio("");
+                    people.setGender("");
+                    people.setGenderFind("");
                     people.setStatusInput(true);
                     people.setEditBio(false);
                     people.setStatusEditProfile(false);
@@ -340,6 +361,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             row.add(people.getBio());
         }
+
         replyKeyboardMarkup.setResizeKeyboard(true);
 
         keyboardRows.add(row);

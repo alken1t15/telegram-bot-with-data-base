@@ -24,6 +24,7 @@ create table people
     status_instagram    boolean not null,
     message_like_status boolean not null,
     message_like        varchar(255),
+    img bytea,
     primary key (id)
 );
 

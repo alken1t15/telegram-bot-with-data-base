@@ -1,12 +1,9 @@
 package com.example.springpolytechlove.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.Random;
 
 
 @ToString
@@ -61,6 +58,9 @@ public class People {
 
     @Column(name = "message_like")
     private String messageLike;
+
+    @Column(name = "img")
+    private byte[] img;
 
     public People(long id, String name, String nameCity, String bio, int age) {
         this.id = id;
