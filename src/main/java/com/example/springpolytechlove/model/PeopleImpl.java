@@ -31,4 +31,5 @@ public class PeopleImpl implements PeopleService {
     public void saved(People people) {
         peopleRepository.save(people);
     }
+
 }

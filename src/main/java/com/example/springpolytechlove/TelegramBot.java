@@ -11,14 +11,20 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Files;
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,12 +102,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessageEdit(getChatIdUser, "Введите ваш город", people);
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
-                sendMessage(getChatIdUser,"Пришлите мне фотографию");
-            }else if (people.getImg()==null){
+                sendMessage(getChatIdUser, "Пришлите мне фотографию");
+            } else if (people.getImg() == null) {
                 String fileId = message33.getPhoto().get(message33.getPhoto().size() - 1).getFileId();
                 GetFile getFile = new GetFile();
                 getFile.setFileId(fileId);
-                org.telegram.telegrambots.meta.api.objects.File file=  null;
+                org.telegram.telegrambots.meta.api.objects.File file = null;
                 try {
                     file = execute(getFile);
                     File fileBytes = downloadFile(file.getFilePath());
@@ -111,7 +117,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
                 sendMessageGenderFind(getChatIdUser);
-            }else if (people.getGenderFind().isEmpty()) {
+            } else if (people.getGenderFind().isEmpty()) {
                 switch (getTextMessage) {
                     case "Парней" -> people.setGenderFind("Парень");
                     case "Девушек" -> people.setGenderFind("Всех");
@@ -190,6 +196,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                     break;
                 case "\uD83D\uDC4C давай начнем":
+                    //  people = new People(getChatIdUser,update.getMessage().getFrom().getUserName(),"","","","",0,);
                     people = new People();
                     people.setIdAccount(getIdUser);
                     people.setUser(update.getMessage().getFrom().getUserName());
@@ -211,6 +218,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "2":
                     sendMessageEdit(getChatIdUser, "Так выглядит твоя анкета:");
+                    byte[] imageBytes = people.getImg();
+                    if (imageBytes.length != 0) {
+                        getMessageWithDataBaseAndSendInMethodSendPhoto(getChatIdUser, imageBytes);
+                    }
                     if (people.getNameInstagram() != null && !people.getNameInstagram().isEmpty()) {
                         sendMessageEdit(getChatIdUser, people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\ninst: " + people.getNameInstagram());
                     } else {
@@ -270,19 +281,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
         List<PeopleLike> peopleLikes = peopleLikeService.findByYou(chatId);
         People people1 = peopleService.findByIdAccount(peopleLikes.get(0).getMe());
-        if (peopleLikes.get(0).getMessage() == null) {
-            if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio());
-            } else {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram());
-            }
-        } else {
-            if (people1.getNameInstagram() == null || people1.getNameInstagram().isEmpty()) {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
-            } else {
-                sendMessageLikeForPeopleBefore(chatId, people1.getName() + ", " + people1.getAge() + ", " + people1.getNameCity() + " - " + people1.getBio() + "\ninst: " + people1.getNameInstagram() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikes.get(0).getMessage());
-            }
+        String peopleLikeText = peopleLikes.get(0).getMessage();
+        byte[] imageBytes = people1.getImg();
+        if (imageBytes.length != 0) {
+            getMessageWithDataBaseAndSendInMethodSendPhoto(chatId, imageBytes);
         }
+        sendMessageLikeForPeopleBefore(chatId, people1, peopleLikeText);
     }
 
     private void likeForPeopleBefore(Long chatId, String messages) {
@@ -295,7 +299,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             PeopleLike peopleLike = peopleLikes.get(0);
             People me = peopleService.findByIdAccount(peopleLike.getMe());
             People you = peopleService.findByIdAccount(chatId);
-            //TODO ЗДЕСЬ
             sendMainMessage(chatId, "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + me.getUser() + " \uD83D\uDC97" + "\n\"1. Смотреть анкеты\n2. Моя анкета\"");
             sendMainMessage(peopleLike.getMe(), "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + you.getUser() + " \uD83D\uDC97" + "\n\"1. Смотреть анкеты\n2. Моя анкета\"");
             peopleLikeService.removeByMeAndYou(peopleLike);
@@ -325,11 +328,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
             int randomNumber = (int) (Math.random() * peopleList.size());
             People people2 = peopleList.get(randomNumber);
-            if (people2.getNameInstagram() != null && !people2.getNameInstagram().isEmpty()) {
-                sendMessageFind(chatId, people2.getName() + ", " + people2.getAge() + ", " + people2.getNameCity() + " - " + people2.getBio() + "\ninst: " + people2.getNameInstagram());
-            } else {
-                sendMessageFind(chatId, people2.getName() + ", " + people2.getAge() + ", " + people2.getNameCity() + " - " + people2.getBio());
+            byte[] imageBytes = people2.getImg();
+            if (imageBytes.length != 0) {
+                getMessageWithDataBaseAndSendInMethodSendPhoto(chatId, imageBytes);
             }
+            sendMessageFind(chatId, people2);
             peopleMain.setAccountFind(people2.getIdAccount());
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,6 +340,41 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         return peopleMain;
     }
+
+
+    //Этот метод отвечает за получение фотографии из базы данных потом, он передает другому методу для отправки фотографии в чат
+    private void getMessageWithDataBaseAndSendInMethodSendPhoto(Long chatId, byte[] imageBytes) {
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "jpg", baos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] imageBytes2 = baos.toByteArray();
+        sendPhoto(chatId, imageBytes2);
+    }
+
+
+    //Этот метод отвечает за отправку фотографии в чат
+    private void sendPhoto(Long chatId, byte[] imageBytes) {
+        InputFile inputFile = new InputFile(new ByteArrayInputStream(imageBytes), "image.jpg");
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(chatId);
+        sendPhoto.setPhoto(inputFile);
+
+        try {
+            execute(sendPhoto);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     //TODO ПЕРЕДЕЛАТЬ ЛОГИКУ ДЛЯ ЗАНОВО ЗАПОЛНЕНИЯ ПРОФИЛЯ
     private void sendMessageEdit(Long chatId, String text, People people) {
@@ -433,10 +471,22 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageLikeForPeopleBefore(Long chatId, String messages) {
+    private void sendMessageLikeForPeopleBefore(Long chatId, People people, String peopleLikeText) {
         SendMessage message = new SendMessage();
+        if (peopleLikeText == null) {
+            if (people.getNameInstagram() == null || people.getNameInstagram().isEmpty()) {
+                message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio());
+            } else {
+                message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\ninst: " + people.getNameInstagram());
+            }
+        } else {
+            if (people.getNameInstagram() == null || people.getNameInstagram().isEmpty()) {
+                message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikeText);
+            } else {
+                message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\ninst: " + people.getNameInstagram() + "\nСообщение для тебя\uD83D\uDC8C: " + peopleLikeText);
+            }
+        }
         message.setChatId(chatId);
-        message.setText(messages);
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -487,10 +537,14 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendMessageFind(Long chatId, String textToSend) {
+    private void sendMessageFind(Long chatId, People people) {
         SendMessage message = new SendMessage();
+        if (people.getNameInstagram() != null && !people.getNameInstagram().isEmpty()) {
+            message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio() + "\ninst: " + people.getNameInstagram());
+        } else {
+            message.setText(people.getName() + ", " + people.getAge() + ", " + people.getNameCity() + " - " + people.getBio());
+        }
         message.setChatId(chatId);
-        message.setText(textToSend);
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         List<KeyboardRow> keyboardRows = new ArrayList<>();

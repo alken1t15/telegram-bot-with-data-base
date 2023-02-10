@@ -1,14 +1,13 @@
 package com.example.springpolytechlove.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 
-@ToString
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "people")
 public class People {
@@ -62,12 +61,20 @@ public class People {
     @Column(name = "img")
     private byte[] img;
 
-    public People(long id, String name, String nameCity, String bio, int age) {
-        this.id = id;
+    public People(Long idAccount, String name, String nameCity, String gender, String genderFind, String bio, Integer age, String user, Boolean statusInput, Boolean editBio, Boolean statusEditProfile, Boolean statusInstagram, Boolean messageLikeStatus) {
+        this.idAccount = idAccount;
         this.name = name;
         this.nameCity = nameCity;
+        this.gender = gender;
+        this.genderFind = genderFind;
         this.bio = bio;
         this.age = age;
+        this.user = user;
+        this.statusInput = statusInput;
+        this.editBio = editBio;
+        this.statusEditProfile = statusEditProfile;
+        this.statusInstagram = statusInstagram;
+        this.messageLikeStatus = messageLikeStatus;
     }
 
     public People() {
