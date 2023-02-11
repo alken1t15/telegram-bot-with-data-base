@@ -1,7 +1,5 @@
 package com.example.springpolytechlove.model.modelpeoplelike;
 
-import com.example.springpolytechlove.model.People;
-import com.example.springpolytechlove.model.PeopleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

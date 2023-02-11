@@ -20,11 +20,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,8 +118,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (people.getGenderFind().isEmpty()) {
                 switch (getTextMessage) {
                     case "Парней" -> people.setGenderFind("Парень");
-                    case "Девушек" -> people.setGenderFind("Всех");
-                    case "Всех" -> people.setGenderFind("Девушка");
+                    case "Девушек" -> people.setGenderFind("Девушка");
+                    case "Всех" -> people.setGenderFind("Всех");
                     default -> sendMessageGenderFind(getChatIdUser);
                 }
                 sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
@@ -196,21 +194,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                     break;
                 case "\uD83D\uDC4C давай начнем":
-                    //  people = new People(getChatIdUser,update.getMessage().getFrom().getUserName(),"","","","",0,);
-                    people = new People();
-                    people.setIdAccount(getIdUser);
-                    people.setUser(update.getMessage().getFrom().getUserName());
-                    people.setName("");
-                    people.setNameCity("");
-                    people.setBio("");
-                    people.setGender("");
-                    people.setGenderFind("");
-                    people.setStatusInput(true);
-                    people.setEditBio(false);
-                    people.setStatusEditProfile(false);
-                    people.setStatusInstagram(false);
-                    people.setMessageLikeStatus(false);
-                    people.setAge(0);
+                      people = new People(getIdUser,"","","","","",0,update.getMessage().getFrom().getUserName(),true,false,false,false,false);
                     sendMessageEdit(getChatIdUser, "Введите ваш возраст", people);
                     break;
                 case "1":

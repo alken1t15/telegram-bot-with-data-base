@@ -1,31 +1,31 @@
-create table people_like
+CREATE TABLE people_like
 (
-    id_main_profile    bigint not null,
-    id_people_for_like bigint not null,
-    message            varchar(255)
+    id_main_profile    BIGINT NOT NULL,
+    id_people_for_like BIGINT NOT NULL,
+    message            VARCHAR(255)
 );
 
-create table people
+CREATE TABLE people
 (
     id                  SERIAL,
-    id_account          bigint  not null,
-    user_name           varchar(25),
-    name                varchar(25),
-    age                 integer,
-    name_city           varchar(25),
-    bio                 varchar(255),
-    account_inst        varchar(35),
-    account_find        bigint,
-    gender              varchar(25),
-    gender_find         varchar(25),
-    status_input        boolean not null,
-    edit_bio            boolean not null,
-    status_edit_profile boolean not null,
-    status_instagram    boolean not null,
-    message_like_status boolean not null,
-    message_like        varchar(255),
-    img bytea,
-    primary key (id)
+    id_account          BIGINT  NOT NULL,
+    user_name           VARCHAR(25),
+    name                VARCHAR(25),
+    age                 INTEGER,
+    name_city           VARCHAR(25),
+    bio                 VARCHAR(255),
+    account_inst        VARCHAR(35),
+    account_find        BIGINT,
+    gender              VARCHAR(25),
+    gender_find         VARCHAR(25),
+    status_input        BOOLEAN NOT NULL,
+    edit_bio            BOOLEAN NOT NULL,
+    status_edit_profile BOOLEAN NOT NULL,
+    status_instagram    BOOLEAN NOT NULL,
+    message_like_status BOOLEAN NOT NULL,
+    message_like        VARCHAR(255),
+    img                 BYTEA,
+    PRIMARY KEY (id)
 );
 
 INSERT INTO people (id, name, age, name_city, bio, account_inst, gender)

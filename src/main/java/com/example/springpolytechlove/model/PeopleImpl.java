@@ -2,10 +2,7 @@ package com.example.springpolytechlove.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class PeopleImpl implements PeopleService {
@@ -24,7 +21,7 @@ public class PeopleImpl implements PeopleService {
 
     @Override
     public List<People> findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(String nameCity, String gender, int age, int age2, long idAccount) {
-        return peopleRepository.findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(nameCity, gender,age, age2, idAccount);
+        return peopleRepository.findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(nameCity, gender, age, age2, idAccount);
     }
 
     @Override
