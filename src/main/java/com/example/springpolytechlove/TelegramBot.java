@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -44,6 +45,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private boolean statusInstagram;
 
     private boolean messageLikeStatus;
+
+    private boolean isEditImg;
     final BotConfig config;
 
     public TelegramBot(BotConfig config) {
@@ -73,6 +76,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             statusEditProfile = people.getStatusEditProfile();
             statusInstagram = people.getStatusInstagram();
             messageLikeStatus = people.getMessageLikeStatus();
+            isEditImg = people.getEditImg();
         }
         if (statusInput) {
             if (people.getAge() == 0) {
@@ -92,44 +96,69 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (people.getGender().isEmpty()) {
                 if (getTextMessage.equals("Я парень")) {
                     people.setGender("Парень");
+                    sendMessageEdit(getChatIdUser, "Введите ваш город", people);
                 } else if (getTextMessage.equals("Я девушка")) {
                     people.setGender("Девушка");
+                    sendMessageEdit(getChatIdUser, "Введите ваш город", people);
                 } else {
                     sendMessageGender(getChatIdUser);
                 }
-                sendMessageEdit(getChatIdUser, "Введите ваш город", people);
             } else if (people.getNameCity().isEmpty()) {
                 people.setNameCity(getTextMessage);
                 sendMessage(getChatIdUser, "Пришлите мне фотографию");
             } else if (people.getImg() == null) {
+                try {
                 String fileId = message33.getPhoto().get(message33.getPhoto().size() - 1).getFileId();
                 GetFile getFile = new GetFile();
                 getFile.setFileId(fileId);
                 org.telegram.telegrambots.meta.api.objects.File file = null;
-                try {
                     file = execute(getFile);
                     File fileBytes = downloadFile(file.getFilePath());
                     byte[] imageBytes = Files.readAllBytes(fileBytes.toPath());
                     people.setImg(imageBytes);
+                    sendMessageGenderFind(getChatIdUser);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    sendMessage(getChatIdUser, "Пришлите мне фотографию");
                 }
-                sendMessageGenderFind(getChatIdUser);
             } else if (people.getGenderFind().isEmpty()) {
                 switch (getTextMessage) {
-                    case "Парней" -> people.setGenderFind("Парень");
-                    case "Девушек" -> people.setGenderFind("Девушка");
-                    case "Всех" -> people.setGenderFind("Всех");
+                    case "Парней" -> {
+                        people.setGenderFind("Парень");
+                        sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
+                    }
+                    case "Девушек" -> {
+                        people.setGenderFind("Девушка");
+                        sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
+                    }
+                    case "Всех" -> {
+                        people.setGenderFind("Всех");
+                        sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
+                    }
                     default -> sendMessageGenderFind(getChatIdUser);
                 }
-                sendMessageEdit(getChatIdUser, "Расскажи немного о себе", people);
             } else if (people.getBio().isEmpty()) {
                 people.setBio(getTextMessage);
                 people.setStatusInput(false);
                 sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
                 people.setStatusEditProfile(false);
             }
-        } else if (statusEditProfile) {
+        } else if(isEditImg){
+            try {
+            String fileId = message33.getPhoto().get(message33.getPhoto().size() - 1).getFileId();
+            GetFile getFile = new GetFile();
+            getFile.setFileId(fileId);
+            org.telegram.telegrambots.meta.api.objects.File file = null;
+                file = execute(getFile);
+                File fileBytes = downloadFile(file.getFilePath());
+                byte[] imageBytes = Files.readAllBytes(fileBytes.toPath());
+                people.setImg(imageBytes);
+                people.setEditImg(false);
+                sendMainMessage(getChatIdUser, "1. Смотреть анкеты\n2. Моя анкета");
+            } catch (Exception e) {
+                sendMessage(getChatIdUser, "Пришлите мне фотографию");
+            }
+        }
+        else if (statusEditProfile) {
             if (update.hasMessage() && update.getMessage().hasText()) {
                 switch (getTextMessage) {
                     case "1" -> {
@@ -139,11 +168,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                         people.setBio("");
                         people.setGender("");
                         people.setGenderFind("");
-                        sendMessage(getChatIdUser, "Сколько тебе лет?");
+                        people.setImg(null);
+                        sendMessageEdit(getChatIdUser, "Сколько тебе лет?",people);
                         people.setStatusInput(true);
                         people.setStatusEditProfile(false);
                     }
-                    case "2" -> sendMessageEdit(getChatIdUser, "Находится в разработке");
+                    case "2" -> {
+                        people.setImg(null);
+                        sendMessageEdit(getChatIdUser, "Пришлите мне фотографию");
+                        people.setEditImg(true);
+                        people.setStatusEditProfile(false);
+                    }
                     case "3" -> {
                         sendMessageForEdit(getChatIdUser);
                         people.setEditBio(true);
@@ -194,7 +229,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                     break;
                 case "\uD83D\uDC4C давай начнем":
-                      people = new People(getIdUser,"","","","","",0,update.getMessage().getFrom().getUserName(),true,false,false,false,false);
+                      people = new People(getIdUser,"","","","","",0,update.getMessage().getFrom().getUserName(),true,false,false,false,false,false);
                     sendMessageEdit(getChatIdUser, "Введите ваш возраст", people);
                     break;
                 case "1":
@@ -283,8 +318,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             PeopleLike peopleLike = peopleLikes.get(0);
             People me = peopleService.findByIdAccount(peopleLike.getMe());
             People you = peopleService.findByIdAccount(chatId);
-            sendMainMessage(chatId, "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + me.getUser() + " \uD83D\uDC97" + "\n\"1. Смотреть анкеты\n2. Моя анкета\"");
-            sendMainMessage(peopleLike.getMe(), "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + you.getUser() + " \uD83D\uDC97" + "\n\"1. Смотреть анкеты\n2. Моя анкета\"");
+            sendMainMessage(chatId, "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + me.getUser() + " \uD83D\uDC97" + "\n1. Смотреть анкеты\n2. Моя анкета");
+            sendMainMessage(peopleLike.getMe(), "Отлично! Надеюсь хорошо проведете время \uD83D\uDE09 Начинай общаться \uD83D\uDC49 @" + you.getUser() + " \uD83D\uDC97" + "\n1. Смотреть анкеты\n2. Моя анкета");
             peopleLikeService.removeByMeAndYou(peopleLike);
         }
 
@@ -306,7 +341,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             List<People> peopleList;
             if (peopleMain.getGenderFind().equals("Парень") || peopleMain.getGenderFind().equals("Девушка")) {
-                peopleList = peopleService.findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(peopleMain.getNameCity(), peopleMain.getGender(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
+                peopleList = peopleService.findAllByNameCityAndGenderAndAgeBetweenAndIdAccountNot(peopleMain.getNameCity(), peopleMain.getGenderFind(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
             } else {
                 peopleList = peopleService.findAllByNameCityAndAgeBetweenAndIdAccountNot(peopleMain.getNameCity(), peopleMain.getAge() - 3, peopleMain.getAge() + 2, chatId);
             }
@@ -361,41 +396,17 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     //TODO ПЕРЕДЕЛАТЬ ЛОГИКУ ДЛЯ ЗАНОВО ЗАПОЛНЕНИЯ ПРОФИЛЯ
-    private void sendMessageEdit(Long chatId, String text, People people) {
+    private void sendMessageEdit(Long chatId, String text,People people) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow row = new KeyboardRow();
-        if (!people.getName().isEmpty() && text.equals("Введите ваше имя")) {
-
-            row.add(people.getName());
-        } else if (people.getAge() != 0 && text.equals("Введите ваше имя")) {
-
-            row.add(String.valueOf(people.getAge()));
-        } else if (!people.getNameCity().isEmpty() && text.equals("Введите ваше имя")) {
-
-            row.add(people.getNameCity());
-        } else if (!people.getBio().isEmpty() && text.equals("Расскажи немного о себе")) {
-
-            row.add(people.getBio());
-        }
-
-        replyKeyboardMarkup.setResizeKeyboard(true);
-
-        keyboardRows.add(row);
-
-        replyKeyboardMarkup.setKeyboard(keyboardRows);
-
-        message.setReplyMarkup(replyKeyboardMarkup);
-
+        ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
+        replyKeyboardRemove.setRemoveKeyboard(true);
+        message.setReplyMarkup(replyKeyboardRemove);
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+
         }
     }
 

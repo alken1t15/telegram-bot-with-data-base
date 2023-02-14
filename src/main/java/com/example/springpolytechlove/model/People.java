@@ -61,7 +61,10 @@ public class People {
     @Column(name = "img")
     private byte[] img;
 
-    public People(Long idAccount, String name, String nameCity, String gender, String genderFind, String bio, Integer age, String user, Boolean statusInput, Boolean editBio, Boolean statusEditProfile, Boolean statusInstagram, Boolean messageLikeStatus) {
+    @Column(name = "edit_img")
+    private Boolean editImg;
+
+    public People(Long idAccount, String name, String nameCity, String gender, String genderFind, String bio, Integer age, String user, Boolean statusInput, Boolean editBio, Boolean statusEditProfile, Boolean statusInstagram, Boolean messageLikeStatus,Boolean editImg) {
         this.idAccount = idAccount;
         this.name = name;
         this.nameCity = nameCity;
@@ -75,6 +78,7 @@ public class People {
         this.statusEditProfile = statusEditProfile;
         this.statusInstagram = statusInstagram;
         this.messageLikeStatus = messageLikeStatus;
+        this.editImg = editImg;
     }
 
     public People() {

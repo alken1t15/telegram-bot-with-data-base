@@ -25,6 +25,7 @@ CREATE TABLE people
     message_like_status BOOLEAN NOT NULL,
     message_like        VARCHAR(255),
     img                 BYTEA,
+    edit_img BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 );
 
